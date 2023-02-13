@@ -1,19 +1,21 @@
 import React, { useState } from "react";
 import "./App.css";
 import { useDrag, useDrop } from "react-dnd";
-interface Objective {
+interface iObjective {
   id: number;
   name: string;
   type: "Objective";
 }
-interface FocusArea {
+interface iFocusArea {
   id: number;
   name: string;
   type: "FocusArea";
-  objectives: Objective[];
+  objectives: iObjective[];
 }
 
-const DEFAULT_DATA: { focusAreas: FocusArea[] } = {
+const DRAGGABLE_TYPE = "BOX";
+
+const DEFAULT_DATA: { focusAreas: iFocusArea[] } = {
   focusAreas: [
     {
       id: 23,
@@ -57,15 +59,10 @@ const DEFAULT_DATA: { focusAreas: FocusArea[] } = {
   ],
 };
 
-function App() {
-  const [focusAreas, setFocusAreas] = useState<FocusArea[]>(
-    DEFAULT_DATA.focusAreas
-  );
-  const DRAGGABLE_TYPE = "BOX";
-
+const Objective = function Objective({ name }: { name: string }) {
   const [{ isDragging }, drag, dragPreview] = useDrag(() => ({
     // "type" is required. It is used by the "accept" specification of drop targets.
-    type: DRAGGABLE_TYPE,
+    type: "BOX",
     // The collect function utilizes a "monitor" instance (see the Overview for what this is)
     // to pull important pieces of state from the DnD system.
     collect: (monitor) => ({
@@ -73,6 +70,29 @@ function App() {
     }),
   }));
 
+  console.log({ isDragging });
+
+  return (
+    <div
+      ref={drag}
+      style={{
+        border: "1px solid green",
+        margin: "10px",
+        padding: "10px",
+      }}
+    >
+      {name}
+    </div>
+  );
+};
+
+const FocusArea = function FocusArea({
+  name,
+  objectives,
+}: {
+  name: string;
+  objectives: iObjective[];
+}) {
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     // The type (or types) to accept - strings or symbols
     accept: DRAGGABLE_TYPE,
@@ -83,7 +103,29 @@ function App() {
     }),
   }));
 
-  console.log({ isDragging });
+  console.log({ canDrop, isOver });
+
+  return (
+    <div
+      ref={drop}
+      style={{
+        border: "1px solid red",
+        margin: "10px",
+        padding: "10px",
+      }}
+    >
+      {name}
+      {objectives.map((objective) => (
+        <Objective name={objective.name} key={objective.id} />
+      ))}
+    </div>
+  );
+};
+
+function App() {
+  const [focusAreas, setFocusAreas] = useState<iFocusArea[]>(
+    DEFAULT_DATA.focusAreas
+  );
 
   return (
     <div className="App">
@@ -94,40 +136,8 @@ function App() {
       The objective divs should be draggable in a way that the user can change the order of the
       objectives within the focus area. The focus area divs should be droppable.
       */}
-
-      <div
-        style={{
-          border: "1px solid blue",
-          margin: "10px",
-          padding: "10px",
-        }}
-        ref={drag}
-        >
-        <h3>Draggable Area</h3>
-      </div>
-
       {focusAreas.map((focusArea) => (
-        <div
-          ref={drop}
-          style={{
-            border: "1px solid red",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h3>{focusArea.name}</h3>
-          {focusArea.objectives.map((objective) => (
-            <div
-              style={{
-                border: "1px solid green",
-                margin: "10px",
-                padding: "10px",
-              }}
-            >
-              <h4>{objective.name}</h4>
-            </div>
-          ))}
-        </div>
+        <FocusArea name={focusArea.name} objectives={focusArea.objectives} key={focusArea.id} />
       ))}
     </div>
   );
