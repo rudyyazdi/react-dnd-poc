@@ -65,12 +65,11 @@ const Objective = function Objective({ name }: { name: string }) {
     type: "BOX",
     // The collect function utilizes a "monitor" instance (see the Overview for what this is)
     // to pull important pieces of state from the DnD system.
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: (monitor) => {
+      console.log({ monitor });
+      return { isDragging: monitor.isDragging() };
+    },
   }));
-
-  console.log({ isDragging });
 
   return (
     <div
@@ -97,13 +96,14 @@ const FocusArea = function FocusArea({
     // The type (or types) to accept - strings or symbols
     accept: DRAGGABLE_TYPE,
     // Props to collect
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
+    end: (item: any , monitor: any) => {
+      console.log({ item, monitor });
+    },
+    collect: (monitor) => {
+      console.log({ monitor });
+      return { isOver: monitor.isOver(), canDrop: monitor.canDrop() };
+    },
   }));
-
-  console.log({ canDrop, isOver });
 
   return (
     <div
@@ -137,7 +137,11 @@ function App() {
       objectives within the focus area. The focus area divs should be droppable.
       */}
       {focusAreas.map((focusArea) => (
-        <FocusArea name={focusArea.name} objectives={focusArea.objectives} key={focusArea.id} />
+        <FocusArea
+          name={focusArea.name}
+          objectives={focusArea.objectives}
+          key={focusArea.id}
+        />
       ))}
     </div>
   );
